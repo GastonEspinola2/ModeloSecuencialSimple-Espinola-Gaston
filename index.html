@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>TensorFlow.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <h1><strong>TensorFlow.js Example</strong></h1>
+    <p>Formula: y = 2x + 6</p>
+
+    <button onclick="entrenarModelo()">Entrenar Modelo</button>
+
+    <input type="number" id="inputX" placeholder="Ingrese un número" />
+
+    <button onclick="predecir()">Predecir</button>
+
+    <p id="resultado">El modelo aún no está entrenado.</p>
+
+    <script>
+      let model;
+
+      async function entrenarModelo() {
+        document.getElementById("resultado").innerText = "Entrenando modelo...";
+
+        model = tf.sequential();
+
+        model.add(tf.layers.dense({ units: 1, inputShape: [1] }));
+
+        model.compile({
+          loss: "meanSquaredError",
+          optimizer: "sgd",
+        });
+
+        const xs = tf.tensor2d([-6, -5, -4, -3, -2, -1, 0, 1, 2], [9, 1]);
+
+        const ys = tf.tensor2d(
+          xs.dataSync().map((x) => 2 * x + 6),
+          [9, 1]
+        );
+
+        await model.fit(xs, ys, { epochs: 350 });
+
+        document.getElementById("resultado").innerText =
+          " Modelo entrenado. Ya puede predecir valores.";
+      }
+
+      function predecir() {
+        if (!model) {
+          document.getElementById("resultado").innerText =
+            "Primero debe entrenar el modelo.";
+          return;
+        }
+
+        const x = parseFloat(document.getElementById("inputX").value);
+
+        if (isNaN(x)) {
+          document.getElementById("resultado").innerText =
+            "Ingrese un número válido.";
+          return;
+        }
+
+        const input = tf.tensor2d([x], [1, 1]);
+
+        const output = model.predict(input).dataSync()[0];
+
+        document.getElementById(
+          "resultado"
+        ).innerText = `El resultado de predecir para ${x} es: ${output}`;
+      }
+    </script>
+  </body>
+</html>
